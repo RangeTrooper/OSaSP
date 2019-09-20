@@ -12,7 +12,7 @@ int TranslateCoords(int value, int minValue, int maxValue, int len, int* speed, 
 void resize(HWND hWnd);
 byte BackgrndCol = COLOR_WINDOW;
 int mouseDownFlag = 0;
-
+bool isWindodCreated = false;
 
 
 
@@ -104,7 +104,10 @@ LRESULT CALLBACK WndProc(
 		break;
 
 	case WM_SIZE:
-		resize(hWnd);
+		if (isWindodCreated)
+			resize(hWnd);
+		else
+			isWindodCreated = true;
 		break;
 
 
@@ -216,12 +219,18 @@ int TranslateCoords(int value, int minValue, int maxValue, int len, int* speed, 
 
 void resize(HWND hWnd)
 {
-	RECT window_rect;
-	GetClientRect(hWnd, &window_rect); //  
-	window_width = window_rect.right - window_rect.left;
-	window_height = window_rect.bottom - window_rect.top;
+	RECT myWind = {};
+	LPRECT window_rect=&myWind; 
+	GetWindowRect(hWnd, window_rect);
+	window_width = window_rect->right - window_rect->left;
+	window_height = window_rect->bottom - window_rect->top;
+	if (window_height < 90)
+		window_height = 93;
+	if (window_width < 262)
+		window_width = 262;
 	TranslateCoordsXY();
 	win_rect = { 0, 0, window_width, window_height };
+	SetWindowPos(hWnd, HWND_TOPMOST, window_rect->left, window_rect->top, window_width, window_height,SWP_SHOWWINDOW);
 	RenewScreen();
 }
 
@@ -235,8 +244,6 @@ int DrawImage()
 
 
 	return 0;
-	//RECT rect{ X, Y, X + rect_width, Y + rect_height };
-	//return FillRect(hdc, &rect, (HBRUSH)(COLOR_WINDOW + 3));
 }
 
 
